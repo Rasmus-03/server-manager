@@ -46,6 +46,8 @@ src/
   App.swift              # SwiftUI app entry point
   ServerManager.swift    # Core logic: server management, SteamCMD, backups
   ContentView.swift      # UI: dashboard, console, options, mods, files
+Resources/
+  AppIcon.icns           # App icon
 build.sh                 # Build script
 ```
 
