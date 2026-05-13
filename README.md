@@ -10,7 +10,7 @@ Built with SwiftUI — no Electron, no web UI, just native macOS.
 - **One-click setup** — Download Vanilla, Forge, or Paper servers directly
 - **Mod management** — Browse, install, enable/disable Minecraft mods via Modrinth
 - **SteamCMD integration** — Install Counter-Strike 2 and ARK dedicated servers
-- **Playit tunnel** — Built-in tunnel support for exposing your server online
+- **Playit tunnel** — Expose your server online via playit.gg (install separately: `brew install playit`)
 - **Resource monitoring** — Real-time CPU/RAM usage per server
 - **Auto-restart** — Automatic crash detection and recovery
 - **Auto-scaling** — Dynamic RAM allocation based on usage
@@ -21,6 +21,8 @@ Built with SwiftUI — no Electron, no web UI, just native macOS.
 
 - macOS 14.0+ (Sonoma)
 - Swift 5.9+ (Xcode 15+ or command-line tools)
+- [playit.gg](https://playit.gg) (optional, for tunnel)
+  - `brew install playit && playit -s` to set up your account
 - [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD) (optional, for CS2/ARK servers)
   - `brew install steamcmd`
 - Java 17+ (optional, for Minecraft servers)
@@ -44,8 +46,6 @@ src/
   App.swift              # SwiftUI app entry point
   ServerManager.swift    # Core logic: server management, SteamCMD, backups
   ContentView.swift      # UI: dashboard, console, options, mods, files
-Resources/
-  playit                 # Playit tunnel agent binary
 build.sh                 # Build script
 ```
 

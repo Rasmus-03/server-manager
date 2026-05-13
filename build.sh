@@ -5,7 +5,6 @@ APP_NAME="Server Manager"
 BUILD_DIR="/tmp/ServerManagerBuild"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC_DIR="$SCRIPT_DIR/src"
-RES_DIR="$SCRIPT_DIR/Resources"
 
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/app/Contents/MacOS"
@@ -17,10 +16,6 @@ xcrun swiftc \
   -target arm64-apple-macosx14.0 \
   -O \
   "$SRC_DIR/App.swift" "$SRC_DIR/ServerManager.swift" "$SRC_DIR/ContentView.swift"
-
-if [ -f "$RES_DIR/playit" ]; then
-  cp "$RES_DIR/playit" "$BUILD_DIR/app/Contents/Resources/"
-fi
 
 cat > "$BUILD_DIR/app/Contents/Info.plist" << PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -36,7 +31,7 @@ cat > "$BUILD_DIR/app/Contents/Info.plist" << PLIST
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.1</string>
+  <string>2.0</string>
   <key>LSMinimumSystemVersion</key>
   <string>14.0</string>
   <key>NSHighResolutionCapable</key>

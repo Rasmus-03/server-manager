@@ -1327,10 +1327,12 @@ class ServerInstance: ObservableObject, Identifiable {
     }
     
     static var playitBin: String {
-        if let bundlePath = Bundle.main.path(forResource: "playit", ofType: nil) {
-            return bundlePath
-        }
-        return "/opt/homebrew/bin/playit"
+        let candidates = [
+            "/opt/homebrew/bin/playit",
+            "/usr/local/bin/playit",
+            "/usr/bin/playit",
+        ]
+        return candidates.first { FileManager.default.isExecutableFile(atPath: $0) } ?? "/opt/homebrew/bin/playit"
     }
 
     static var maxCPUThreads: Int {

@@ -1626,32 +1626,118 @@ struct FilesView: View {
 
 struct NetworkView: View {
     @ObservedObject var instance: ServerInstance
+    @State private var editJoinAddress = ""
+    @State private var editPlayitEndpoint = ""
+    @State private var isEditing = false
+    @State private var playitStatus = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            PageTitle(title: "Network", subtitle: "Playit tunnel and local server addresses.")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                PageTitle(title: "Network", subtitle: "Playit tunnel and local server addresses.")
 
-            PanelCard("Addresses", icon: "network") {
-                VStack(spacing: 10) {
-                    AddressRow(title: "Join address", value: instance.publicJoinAddress) {
-                        instance.copyToClipboard(instance.publicJoinAddress)
-                    }
-                    AddressRow(title: "Direct Playit endpoint", value: instance.playitTargetAddress) {
-                        instance.copyToClipboard(instance.playitTargetAddress)
-                    }
-                    AddressRow(title: "Local target", value: instance.localAddress) {
-                        instance.copyToClipboard(instance.localAddress)
-                    }
-                    AddressRow(title: "Current status", value: instance.tunnelURL) {
-                        instance.copyToClipboard(instance.tunnelURL)
+                if !playitInstalled {
+                    PanelCard("Playit Not Found", icon: "exclamationmark.triangle") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Playit tunnel agent is required to expose your server online.")
+                                .foregroundStyle(.secondary)
+                            Text("Install it via Homebrew:")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("brew install playit")
+                                .font(.system(.body, design: .monospaced))
+                                .textSelection(.enabled)
+                                .padding(8)
+                                .background(Color.rowBackground)
+                                .cornerRadius(6)
+                            Text("Then run: playit -s to set up your account")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
+
+                PanelCard("Addresses", icon: "network") {
+                    VStack(spacing: 10) {
+                        HStack {
+                            AddressRow(title: "Join address", value: instance.publicJoinAddress) {
+                                instance.copyToClipboard(instance.publicJoinAddress)
+                            }
+                            Button {
+                                editJoinAddress = instance.publicJoinAddress
+                                editPlayitEndpoint = instance.playitTargetAddress
+                                isEditing = true
+                            } label: {
+                                Image(systemName: "pencil")
+                            }
+                            .buttonStyle(.bordered)
+                            .help("Edit tunnel addresses")
+                        }
+                        AddressRow(title: "Direct Playit endpoint", value: instance.playitTargetAddress) {
+                            instance.copyToClipboard(instance.playitTargetAddress)
+                        }
+                        AddressRow(title: "Local target", value: instance.localAddress) {
+                            instance.copyToClipboard(instance.localAddress)
+                        }
+                        AddressRow(title: "Current status", value: instance.tunnelURL) {
+                            instance.copyToClipboard(instance.tunnelURL)
+                        }
+                    }
+                }
+
+                PanelCard("Playit Log", icon: "waveform") {
+                    LogBox(text: instance.networkLog.isEmpty ? "Playit output will appear here." : instance.networkLog, height: nil, color: .green)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .sheet(isPresented: $isEditing) {
+            editSheet
+        }
+    }
+
+    private var playitInstalled: Bool {
+        FileManager.default.isExecutableFile(atPath: ServerInstance.playitBin)
+    }
+
+    private var editSheet: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Edit Tunnel Addresses")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Join Address")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                TextField("e.g. my-server.joinmc.link", text: $editJoinAddress)
+                    .textFieldStyle(.roundedBorder)
             }
 
-            PanelCard("Playit Log", icon: "waveform") {
-                LogBox(text: instance.networkLog.isEmpty ? "Playit output will appear here." : instance.networkLog, height: nil, color: .green)
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Playit Endpoint")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                TextField("e.g. my-server.at.ply.gg:12345", text: $editPlayitEndpoint)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            HStack {
+                Button("Cancel") {
+                    isEditing = false
+                }
+                Spacer()
+                Button("Save") {
+                    var config = instance.config
+                    config.publicJoinAddress = editJoinAddress
+                    config.playitTargetAddress = editPlayitEndpoint
+                    instance.config = config
+                    isEditing = false
+                }
+                .buttonStyle(.borderedProminent)
             }
         }
+        .padding(20)
+        .frame(width: 400)
     }
 }
 
