@@ -1,11 +1,9 @@
-stages:
-  - check
+image: alpine:latest
 
 syntax-check:
-  stage: check
   script:
     - echo "Server Manager is a macOS SwiftUI app."
     - echo "Requires Xcode 15+ and macOS 14+ to build."
     - echo "See README.md for build instructions."
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
