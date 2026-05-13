@@ -319,7 +319,7 @@ struct SidebarView: View {
             Button {
                 showingAddServer = true
             } label: {
-                Label("Opret server", systemImage: "plus")
+                    Label("Add Server", systemImage: "plus")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -505,7 +505,7 @@ struct HeaderBar: View {
                     Button {
                         showingCreateServer = true
                     } label: {
-                        Label("Opret server", systemImage: "plus.circle")
+                        Label("Add Server", systemImage: "plus.circle")
                             .font(.headline)
                             .frame(width: 142, height: 40)
                     }

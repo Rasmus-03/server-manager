@@ -325,7 +325,7 @@ class ServerInstance: ObservableObject, Identifiable {
     @Published var isRunning = false
     @Published var logOutput = ""
     @Published var networkLog = ""
-    @Published var tunnelURL: String = "Tjek din Playit konto"
+    @Published var tunnelURL: String = "Check your Playit account"
     @Published var ramGB: Int = 4
     @Published var cpuThreads: Int = 1
     @Published var cpuUsagePercent: Double = 0
@@ -776,18 +776,18 @@ class ServerInstance: ObservableObject, Identifiable {
         }
 
         guard let launchProfile = selectedLaunchProfile else {
-            logOutput = "[Fejl] No installed server version was found in \(serverPath).\n"
+            logOutput = "[Error] No installed server version was found in \(serverPath).\n"
             return
         }
         logOutput = ""
         networkLog = ""
         guard let javaExecutable = javaExecutableURL(for: launchProfile) else {
             let requiredVersion = requiredJavaMajorVersion(for: launchProfile)
-            logOutput = "[Fejl] \(launchProfile.displayName) requires Java \(requiredVersion)+, but no matching Java was found.\n"
+            logOutput = "[Error] \(launchProfile.displayName) requires Java \(requiredVersion)+, but no matching Java was found.\n"
             return
         }
         stopPlayit()
-        tunnelURL = "Starter..."
+        tunnelURL = "Starting..."
         saveRamSettings()
         logOutput += "[Info] Starting server...\n"
 
@@ -855,7 +855,7 @@ class ServerInstance: ObservableObject, Identifiable {
             self.process = nil
             self.stopResourceMonitor()
             self.tunnelURL = "Offline"
-            self.logOutput += "[Fejl] \(error.localizedDescription)\n"
+            self.logOutput += "[Error] \(error.localizedDescription)\n"
         }
     }
 
@@ -912,11 +912,11 @@ class ServerInstance: ObservableObject, Identifiable {
 
         let executablePath = ServerInstance.normalizedServerPath(config.customExecutablePath)
         guard !executablePath.isEmpty else {
-            logOutput = "[Fejl] Choose a server executable in Options before starting \(config.gameKind.displayName).\n"
+            logOutput = "[Error] Choose a server executable in Options before starting \(config.gameKind.displayName).\n"
             return
         }
         guard FileManager.default.isExecutableFile(atPath: executablePath) else {
-            logOutput = "[Fejl] The server executable is missing or not executable: \(executablePath)\n"
+            logOutput = "[Error] The server executable is missing or not executable: \(executablePath)\n"
             return
         }
 
@@ -974,7 +974,7 @@ class ServerInstance: ObservableObject, Identifiable {
             } catch {
                 self.process = nil
                 self.stopResourceMonitor()
-                self.logOutput += "[Fejl] \(error.localizedDescription)\n"
+                self.logOutput += "[Error] \(error.localizedDescription)\n"
             }
         }
     }
@@ -1194,7 +1194,7 @@ class ServerInstance: ObservableObject, Identifiable {
 
     func startPlayit() {
         guard tunnelProcess?.isRunning != true else { return }
-        networkLog += "[Network] Starter din eksisterende Playit agent...\n"
+        networkLog += "[Network] Starting your Playit agent...\n"
         networkLog += "[Network] Minecraft-adresse: \(publicJoinAddress)\n"
         networkLog += "[Network] Playit endpoint: \(playitTargetAddress)\n"
         tunnelURL = publicJoinAddress
@@ -1224,7 +1224,7 @@ class ServerInstance: ObservableObject, Identifiable {
         tProc.terminationHandler = { [weak self] process in
             pipe.fileHandleForReading.readabilityHandler = nil
             DispatchQueue.main.async {
-                self?.networkLog += "[Network] Playit stoppede med kode \(process.terminationStatus)\n"
+                self?.networkLog += "[Network] Playit stopped with code \(process.terminationStatus)\n"
                 self?.tunnelProcess = nil
                 if self?.isRunning == true {
                     self?.tunnelURL = "Playit offline"
