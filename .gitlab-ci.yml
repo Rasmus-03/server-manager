@@ -1,9 +1,27 @@
-image: alpine:latest
+stages:
+  - build
 
-syntax-check:
+build-web:
+  image: node:20-alpine
+  stage: build
   script:
-    - echo "Server Manager is a macOS SwiftUI app."
-    - echo "Requires Xcode 15+ and macOS 14+ to build."
-    - echo "See README.md for build instructions."
+    - cd src/web
+    - npm install --omit=dev
+    - mkdir -p ../../releases/web
+    - cp -r public server.js package.json node_modules ../../releases/web/
+    - echo "Web UI built successfully."
+  artifacts:
+    paths:
+      - releases/web/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build-macos:
+  image: alpine:latest
+  stage: build
+  script:
+    - echo "macOS build requires Xcode 15+ and macOS 14+."
+    - echo "Build locally with: ./build.sh"
+    - echo "See README.md for instructions."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"

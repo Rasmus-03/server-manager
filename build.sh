@@ -1,28 +1,34 @@
 #!/bin/bash
 set -e
 
-APP_NAME="Server Manager"
-BUILD_DIR="/tmp/ServerManagerBuild"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC_DIR="$SCRIPT_DIR/src"
 RES_DIR="$SCRIPT_DIR/Resources"
+RELEASE_DIR="$SCRIPT_DIR/releases"
+mkdir -p "$RELEASE_DIR"
 
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR/app/Contents/MacOS"
-mkdir -p "$BUILD_DIR/app/Contents/Resources"
+# Detect OS
+if [[ "$(uname)" == "Darwin" ]]; then
+  echo "=== Building macOS native app ==="
+  APP_NAME="Server Manager"
+  BUILD_DIR="/tmp/ServerManagerBuild"
 
-xcrun swiftc \
-  -o "$BUILD_DIR/app/Contents/MacOS/ServerManager" \
-  -module-name ServerManager \
-  -target arm64-apple-macosx14.0 \
-  -O \
-  "$SRC_DIR/App.swift" "$SRC_DIR/ServerManager.swift" "$SRC_DIR/ContentView.swift"
+  rm -rf "$BUILD_DIR"
+  mkdir -p "$BUILD_DIR/app/Contents/MacOS"
+  mkdir -p "$BUILD_DIR/app/Contents/Resources"
 
-if [ -f "$RES_DIR/AppIcon.icns" ]; then
-  cp "$RES_DIR/AppIcon.icns" "$BUILD_DIR/app/Contents/Resources/"
-fi
+  xcrun swiftc \
+    -o "$BUILD_DIR/app/Contents/MacOS/ServerManager" \
+    -module-name ServerManager \
+    -target arm64-apple-macosx14.0 \
+    -O \
+    "$SRC_DIR/App.swift" "$SRC_DIR/ServerManager.swift" "$SRC_DIR/ContentView.swift"
 
-cat > "$BUILD_DIR/app/Contents/Info.plist" << PLIST
+  if [ -f "$RES_DIR/AppIcon.icns" ]; then
+    cp "$RES_DIR/AppIcon.icns" "$BUILD_DIR/app/Contents/Resources/"
+  fi
+
+  cat > "$BUILD_DIR/app/Contents/Info.plist" << PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -47,10 +53,29 @@ cat > "$BUILD_DIR/app/Contents/Info.plist" << PLIST
 </plist>
 PLIST
 
-RELEASE_DIR="$SCRIPT_DIR/releases"
-mkdir -p "$RELEASE_DIR"
-rm -rf "/Applications/Server Manager.app" "$RELEASE_DIR/Server Manager.app"
-cp -R "$BUILD_DIR/app" "/Applications/Server Manager.app"
-cp -R "$BUILD_DIR/app" "$RELEASE_DIR/Server Manager.app"
-echo "Done: /Applications/Server Manager.app"
-echo "Archive: $RELEASE_DIR/Server Manager.app"
+  rm -rf "/Applications/Server Manager.app" "$RELEASE_DIR/Server Manager.app"
+  cp -R "$BUILD_DIR/app" "/Applications/Server Manager.app"
+  cp -R "$BUILD_DIR/app" "$RELEASE_DIR/Server Manager.app"
+  echo "macOS app built: /Applications/Server Manager.app"
+  echo "Archive: $RELEASE_DIR/Server Manager.app"
+fi
+
+echo ""
+echo "=== Building web UI (cross-platform) ==="
+cd "$SRC_DIR/web"
+if [ ! -d "node_modules" ]; then
+  npm install --omit=dev
+fi
+echo "Web UI ready at src/web/"
+echo "Start with: node src/web/server.js"
+echo ""
+echo "=== Build complete ==="
+echo ""
+echo "To run on Linux:"
+echo "  1. Install Node.js 18+"
+echo "  2. cd src/web && npm install && node server.js"
+echo "  3. Open http://localhost:3478"
+echo ""
+echo "To run on macOS:"
+echo "  - Native app: /Applications/Server Manager.app"
+echo "  - Web UI:     cd src/web && node server.js"
