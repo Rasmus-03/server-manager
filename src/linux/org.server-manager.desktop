@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Server Manager
+Comment=Game server management for Minecraft, CS2, ARK and more
+Categories=Game;Utility;System;
+Terminal=false
+Exec=server-manager
+Icon=server-manager
+StartupNotify=true

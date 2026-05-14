@@ -7,8 +7,9 @@ RES_DIR="$SCRIPT_DIR/Resources"
 RELEASE_DIR="$SCRIPT_DIR/releases"
 mkdir -p "$RELEASE_DIR"
 
-# Detect OS
-if [[ "$(uname)" == "Darwin" ]]; then
+OS="$(uname)"
+
+if [ "$OS" = "Darwin" ]; then
   echo "=== Building macOS native app ==="
   APP_NAME="Server Manager"
   BUILD_DIR="/tmp/ServerManagerBuild"
@@ -58,24 +59,32 @@ PLIST
   cp -R "$BUILD_DIR/app" "$RELEASE_DIR/Server Manager.app"
   echo "macOS app built: /Applications/Server Manager.app"
   echo "Archive: $RELEASE_DIR/Server Manager.app"
+
+elif [ "$OS" = "Linux" ]; then
+  echo "=== Building Linux app ==="
+  echo "Checking Python dependencies..."
+  if ! command -v python3 &> /dev/null; then
+    echo "Error: python3 is required. Install it with: sudo apt install python3"
+    exit 1
+  fi
+
+  pip3 install -r "$SRC_DIR/linux/requirements.txt" 2>/dev/null || \
+    echo "Warning: Could not install PyGObject. Run: sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-3.0"
+
+  mkdir -p "$RELEASE_DIR/Server Manager"
+  cp -r "$SRC_DIR/linux"/* "$RELEASE_DIR/Server Manager/"
+  make -C "$SRC_DIR/linux" install PREFIX="$RELEASE_DIR/Server Manager" 2>/dev/null || true
+  echo "Linux app prepared in: $RELEASE_DIR/Server Manager/"
+  echo ""
+  echo "To install system-wide:"
+  echo "  cd src/linux && sudo make install"
+  echo "  Then launch from app menu or run: server-manager"
+else
+  echo "Unsupported OS: $OS"
+  exit 1
 fi
 
 echo ""
-echo "=== Building web UI (cross-platform) ==="
-cd "$SRC_DIR/web"
-if [ ! -d "node_modules" ]; then
-  npm install --omit=dev
-fi
-echo "Web UI ready at src/web/"
-echo "Start with: node src/web/server.js"
-echo ""
 echo "=== Build complete ==="
-echo ""
-echo "To run on Linux:"
-echo "  1. Install Node.js 18+"
-echo "  2. cd src/web && npm install && node server.js"
-echo "  3. Open http://localhost:3478"
-echo ""
-echo "To run on macOS:"
-echo "  - Native app: /Applications/Server Manager.app"
-echo "  - Web UI:     cd src/web && node server.js"
+echo "macOS:  /Applications/Server Manager.app"
+echo "Linux:  src/linux/ (run: cd src/linux && python3 server-manager.py)"

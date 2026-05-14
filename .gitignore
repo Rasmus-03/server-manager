@@ -29,6 +29,11 @@ DerivedData/
 *.swo
 .vscode/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
 # Environment
 .env
 .env.local

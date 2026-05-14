@@ -1,27 +1,50 @@
 stages:
   - build
-
-build-web:
-  image: node:20-alpine
-  stage: build
-  script:
-    - cd src/web
-    - npm install --omit=dev
-    - mkdir -p ../../releases/web
-    - cp -r public server.js package.json node_modules ../../releases/web/
-    - echo "Web UI built successfully."
-  artifacts:
-    paths:
-      - releases/web/
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+  - release
 
 build-macos:
   image: alpine:latest
   stage: build
   script:
-    - echo "macOS build requires Xcode 15+ and macOS 14+."
+    - echo "macOS build requires Xcode 15+ on macOS 14+."
     - echo "Build locally with: ./build.sh"
-    - echo "See README.md for instructions."
+    - mkdir -p releases
+    - echo "See README.md for macOS build instructions." > releases/README-macos.txt
+  artifacts:
+    paths:
+      - releases/
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^macos-/
+
+build-linux:
+  image: ubuntu:22.04
+  stage: build
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq python3 python3-gi python3-gi-cairo gir1.2-gtk-3.0 make
+  script:
+    - cd src/linux
+    - make install PREFIX=/tmp/server-manager-linux
+    - tar czf ../../releases/server-manager-linux.tar.gz -C /tmp/server-manager-linux .
+    - echo "Linux build complete."
+  artifacts:
+    paths:
+      - releases/server-manager-linux.tar.gz
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^linux-/
+
+build-all:
+  image: alpine:latest
+  stage: build
+  script:
+    - echo "Server Manager - Cross-platform"
+    - echo "macOS: SwiftUI app, requires Xcode 15+"
+    - echo "Linux: Python GTK3 app, requires python3-gi"
+    - mkdir -p releases
+    - cp -r src/linux releases/server-manager-linux-src
+    - echo "Source code prepared for both platforms." > releases/README.txt
+  artifacts:
+    paths:
+      - releases/
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
